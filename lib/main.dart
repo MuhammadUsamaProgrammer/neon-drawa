@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:speedometer/neon_draw.dart';
+import 'package:neonTrail/app/screens/view/neon_draw.dart';
 
 void main() {
   runApp(const MyApp());

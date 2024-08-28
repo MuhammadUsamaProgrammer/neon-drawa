@@ -1,4 +1,4 @@
-package com.example.speedometer
+package com.example.neonTrail
 
 import io.flutter.embedding.android.FlutterActivity
 

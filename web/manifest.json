@@ -1,6 +1,6 @@
 {
-    "name": "speedometer",
-    "short_name": "speedometer",
+    "name": "neonTrail",
+    "short_name": "neonTrail",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

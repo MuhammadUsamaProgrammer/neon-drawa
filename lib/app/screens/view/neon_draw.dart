@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 class NeonTrailScreen extends StatefulWidget {
@@ -9,58 +7,87 @@ class NeonTrailScreen extends StatefulWidget {
 
 class _NeonTrailScreenState extends State<NeonTrailScreen> {
   List<List<Offset>> _lines = [];
+  List<List<List<Offset>>> _linesHistory = [];
   List<Offset> _currentLine = [];
-  Timer? _timer;
+  bool _isErasing = false;
 
-  void _startRemoving() {
-    _timer = Timer.periodic(const Duration(milliseconds: 30), (timer) {
-      setState(() {
-        if (_lines.isNotEmpty) {
-          if (_lines.last.isEmpty) {
-            _lines.removeLast();
-          }
-          if (_lines.isNotEmpty && _lines.last.isNotEmpty) {
-            _lines.last.removeAt(_lines.last.length - 1);
-          }
-        }
-      });
+  void _switchEraseMode(bool v) {
+    setState(() {
+      _isErasing = v;
     });
   }
 
-  void _stopRemoving() {
-    _timer?.cancel();
+  void _undo() {
+    setState(() {
+      if (_linesHistory.isNotEmpty) {
+        _lines = _linesHistory.removeLast();
+      }
+    });
+  }
+
+  void _saveState() {
+    _linesHistory.add(_lines.map((line) => List<Offset>.from(line)).toList());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      floatingActionButton: GestureDetector(
-        onLongPress: _startRemoving,
-        onLongPressUp: _stopRemoving,
-        child: FloatingActionButton(onPressed: () {
-          if (_lines.isNotEmpty) {
-            _lines.removeLast();
-            // if (_lines.last.isEmpty) {
-            //   _lines.removeLast();
-            // }
-            // if (_lines.last.isNotEmpty) {
-            //   _lines.last.removeAt(_lines.last.length - 1);
-            // }
-          }
-        }),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: _undo,
+            child: const Icon(Icons.undo),
+          ),
+          const SizedBox(width: 16),
+          FloatingActionButton(
+            onPressed: () {
+              _switchEraseMode(true);
+            },
+            backgroundColor: _isErasing
+                ? Colors.red.shade100
+                : Colors.red.shade100.withOpacity(0.5),
+            child: Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: Image.asset("images/erase.png"),
+            ),
+          ),
+          const SizedBox(width: 16),
+          FloatingActionButton(
+            onPressed: () {
+              _switchEraseMode(false);
+            },
+            backgroundColor: !_isErasing
+                ? Colors.red.shade100
+                : Colors.red.shade100.withOpacity(0.5),
+            child: Icon(Icons.brush),
+          ),
+        ],
       ),
       body: GestureDetector(
+        onPanStart: (details) {
+          _saveState();
+          if (!_isErasing) {
+            _currentLine = [details.localPosition];
+          }
+        },
         onPanUpdate: (details) {
           setState(() {
-            _currentLine.add(details.localPosition);
+            if (_isErasing) {
+              _eraseLine(details.localPosition);
+            } else {
+              _currentLine.add(details.localPosition);
+            }
           });
         },
         onPanEnd: (details) {
-          setState(() {
-            _lines.add(List.from(_currentLine));
-            _currentLine.clear();
-          });
+          if (!_isErasing) {
+            setState(() {
+              _lines.add(_currentLine);
+              _currentLine = [];
+            });
+          }
         },
         child: CustomPaint(
           painter: NeonTrailPainter(_lines, _currentLine),
@@ -68,6 +95,31 @@ class _NeonTrailScreenState extends State<NeonTrailScreen> {
         ),
       ),
     );
+  }
+
+  void _eraseLine(Offset point) {
+    List<List<Offset>> newLines = [];
+
+    for (var line in _lines) {
+      List<Offset> newLineSegment = [];
+
+      for (var p in line) {
+        if ((p - point).distance >= 20.0) {
+          newLineSegment.add(p);
+        } else if (newLineSegment.isNotEmpty) {
+          newLines.add(newLineSegment);
+          newLineSegment = [];
+        }
+      }
+
+      if (newLineSegment.isNotEmpty) {
+        newLines.add(newLineSegment);
+      }
+    }
+
+    setState(() {
+      _lines = newLines;
+    });
   }
 }
 
