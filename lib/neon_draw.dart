@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 class NeonTrailScreen extends StatefulWidget {
-  static const routeName = '/gatewaySetup';
   @override
   _NeonTrailScreenState createState() => _NeonTrailScreenState();
 }
