@@ -11,6 +11,12 @@ class NeonVM extends GetxController {
     isErasing.value = v;
   }
 
+  Rx<Color> clr = Color(0xffffcdd2).obs;
+
+  void changeClr(Color c) {
+    clr.value = c;
+  }
+
   void undo() {
     if (linesHistory.isNotEmpty) {
       lines.value = linesHistory.removeLast();

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:neonTrail/app/screens/viewModel/neon_draw_viewModel.dart';
 
 class NeonTrailPainter extends CustomPainter {
   final List<List<Offset>> lines;
   final List<Offset> currentLine;
+
+  final neonVM = Get.find<NeonVM>();
 
   NeonTrailPainter(this.lines, this.currentLine);
 
@@ -10,16 +14,26 @@ class NeonTrailPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     for (List<Offset> line in lines) {
       if (line.isNotEmpty) {
-        _drawNeonLine(canvas, line, size);
+        _drawNeonLine(
+          canvas,
+          line,
+          size,
+          neonVM.clr.value,
+        );
       }
     }
 
     if (currentLine.isNotEmpty) {
-      _drawNeonLine(canvas, currentLine, size);
+      _drawNeonLine(
+        canvas,
+        currentLine,
+        size,
+        neonVM.clr.value,
+      );
     }
   }
 
-  void _drawNeonLine(Canvas canvas, List<Offset> points, Size size) {
+  void _drawNeonLine(Canvas canvas, List<Offset> points, Size size, Color clr) {
     if (points.isEmpty) return;
 
     final Path path = Path()..moveTo(points.first.dx, points.first.dy);
@@ -31,7 +45,8 @@ class NeonTrailPainter extends CustomPainter {
     Paint outerGlowPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          Colors.purpleAccent.withOpacity(0.2),
+          clr.withOpacity(0.7),
+          // Colors.purpleAccent.withOpacity(0.9),
           Colors.transparent,
         ],
         stops: [0.0, 1.0],
@@ -48,8 +63,8 @@ class NeonTrailPainter extends CustomPainter {
           // Colors.purpleAccent.withOpacity(0.8),
           // Colors.pinkAccent.withOpacity(0.5),
 
-          Colors.purpleAccent.withOpacity(0.7),
-          Colors.purpleAccent.withOpacity(0.7),
+          clr.withOpacity(0.7),
+          clr.withOpacity(0.7),
         ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 15)
@@ -59,7 +74,7 @@ class NeonTrailPainter extends CustomPainter {
 
     // Draw the core line
     Paint corePaint = Paint()
-      ..color = Colors.purpleAccent
+      ..color = clr
       ..style = PaintingStyle.stroke
       ..strokeWidth = 6;
     canvas.drawPath(path, corePaint);

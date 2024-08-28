@@ -2,12 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:neonTrail/app/screens/view/components/color_picker_popup.dart';
 import 'package:neonTrail/app/screens/view/components/custom_painter.dart';
 import 'package:neonTrail/app/screens/viewModel/neon_draw_viewModel.dart';
 
 class NeonTrailScreen extends StatelessWidget {
   final neonVM = Get.put(NeonVM());
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,6 +22,22 @@ class NeonTrailScreen extends StatelessWidget {
                   ? Colors.red.shade100
                   : Colors.red.shade100.withOpacity(0.5),
               child: const Icon(Icons.undo),
+            ),
+            const SizedBox(width: 16),
+            FloatingActionButton(
+              onPressed: () {
+                showDialog(
+                  barrierDismissible: true,
+                  useRootNavigator: false,
+                  barrierColor: Colors.transparent,
+                  context: context,
+                  builder: (BuildContext context) {
+                    return ColorPickerPopup();
+                  },
+                );
+              },
+              backgroundColor: neonVM.clr.value,
+              child: const Icon(Icons.color_lens_outlined),
             ),
             const SizedBox(width: 16),
             FloatingActionButton(
