@@ -9,7 +9,9 @@ import 'package:neonTrail/app/screens/view/components/funky_overlay.dart';
 import 'package:neonTrail/app/screens/viewModel/neon_draw_viewModel.dart';
 
 class ColorPickerPopup extends StatelessWidget {
-  ColorPickerPopup({super.key});
+  Function callBack;
+  Color clr;
+  ColorPickerPopup({super.key, required this.callBack, required this.clr});
   final neonVM = Get.find<NeonVM>();
 
   @override
@@ -48,9 +50,9 @@ class ColorPickerPopup extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: ColorPicker(
-                        color: Color(0xffffcdd2),
+                        color: clr,
                         onChanged: (value) {
-                          neonVM.changeClr(value);
+                          callBack(value);
                         },
                         initialPicker: Picker.paletteHue,
                       ),

@@ -1,9 +1,8 @@
-// ignore_for_file: invalid_use_of_protected_member
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:neonTrail/app/screens/view/components/color_picker_popup.dart';
+import 'package:neonTrail/app/screens/model/neon_line_model.dart';
 import 'package:neonTrail/app/screens/view/components/custom_painter.dart';
+import 'package:neonTrail/app/screens/view/components/settings_popup.dart';
 import 'package:neonTrail/app/screens/viewModel/neon_draw_viewModel.dart';
 
 class NeonTrailScreen extends StatelessWidget {
@@ -11,19 +10,11 @@ class NeonTrailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
       floatingActionButton: Obx(
         () => Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            FloatingActionButton(
-              onPressed: neonVM.undo,
-              backgroundColor: neonVM.linesHistory.isNotEmpty
-                  ? Colors.red.shade100
-                  : Colors.red.shade100.withOpacity(0.5),
-              child: const Icon(Icons.undo),
-            ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 30),
             FloatingActionButton(
               onPressed: () {
                 showDialog(
@@ -32,12 +23,20 @@ class NeonTrailScreen extends StatelessWidget {
                   barrierColor: Colors.transparent,
                   context: context,
                   builder: (BuildContext context) {
-                    return ColorPickerPopup();
+                    return SettingsPopup();
                   },
                 );
               },
-              backgroundColor: neonVM.clr.value,
-              child: const Icon(Icons.color_lens_outlined),
+              backgroundColor: Colors.red.shade100,
+              child: const Icon(Icons.settings),
+            ),
+            Spacer(),
+            FloatingActionButton(
+              onPressed: neonVM.undo,
+              backgroundColor: neonVM.linesHistory.isNotEmpty
+                  ? Colors.red.shade100
+                  : Colors.red.shade100.withOpacity(0.5),
+              child: const Icon(Icons.undo),
             ),
             const SizedBox(width: 16),
             FloatingActionButton(
@@ -65,31 +64,40 @@ class NeonTrailScreen extends StatelessWidget {
           ],
         ),
       ),
-      body: GestureDetector(
-        onPanStart: (details) {
-          neonVM.saveState();
-          if (!neonVM.isErasing.value) {
-            neonVM.currentLine.value = [details.localPosition];
-          }
-        },
-        onPanUpdate: (details) {
-          if (neonVM.isErasing.value) {
-            neonVM.eraseLine(details.localPosition);
-          } else {
-            neonVM.currentLine.add(details.localPosition);
-          }
-        },
-        onPanEnd: (details) {
-          if (!neonVM.isErasing.value) {
-            neonVM.lines.add(neonVM.currentLine.value);
-            neonVM.currentLine.value = [];
-          }
-        },
-        child: Obx(
-          () => CustomPaint(
-            painter:
-                NeonTrailPainter(neonVM.lines.value, neonVM.currentLine.value),
-            child: Container(),
+      body: Obx(
+        () => Container(
+          color: neonVM.backgroundClr.value,
+          child: GestureDetector(
+            onPanStart: (details) {
+              neonVM.saveState();
+              if (!neonVM.isErasing.value) {
+                neonVM.currentLine.value = NeonModel(
+                    offset: [details.localPosition],
+                    clr: neonVM.clr.value,
+                    width: (neonVM.brushWidth.value) / 2,
+                    rainbow: neonVM.isRainbow.value,
+                    neonEffect: neonVM.isNeonEffect.value);
+              }
+            },
+            onPanUpdate: (details) {
+              if (neonVM.isErasing.value) {
+                neonVM.eraseLine(details.localPosition);
+              } else {
+                neonVM.currentLine.value.offset.add(details.localPosition);
+                neonVM.currentLine.refresh();
+              }
+            },
+            onPanEnd: (details) {
+              if (!neonVM.isErasing.value) {
+                neonVM.lines.add(neonVM.currentLine.value);
+                neonVM.currentLine.value = NeonModel(offset: [], width: 6);
+              }
+            },
+            child: CustomPaint(
+              painter: NeonTrailPainter(
+                  neonVM.lines.value, neonVM.currentLine.value),
+              child: Container(),
+            ),
           ),
         ),
       ),
